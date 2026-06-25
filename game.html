@@ -851,7 +851,7 @@ function nextWave(){
 function showVictory(){
   gameState='over';
   const ov=document.getElementById('overlay'); ov.style.display='flex';
-  ov.innerHTML=`<h2 style="font-size:36px;">🏆 YOU WIN!</h2><p style="font-size:16px;color:#FFD700;margin:10px 0;">You conquered all 10 levels!</p><p style="color:#aaa;">Final Score: <strong style="color:#FFD700">${score}</strong></p><p style="color:#aaa;">Gold earned: 🪙 ${gold}</p><p style="color:#555;font-size:12px;margin-top:8px;">You are a true Rival. 👑</p><button class="big-btn" onclick="startGame()">▶ PLAY AGAIN</button><button class="ghost-btn" onclick="backToMenu()">↩ Menu</button>`;
+  ov.innerHTML=`<h2 style="font-size:30px;">🏆 YOU WIN!</h2><p style="font-size:16px;color:#FFD700;margin:10px 0;">You conquered all 10 levels!</p><p style="color:#aaa;">Final Score: <strong style="color:#FFD700">${score}</strong></p><p style="color:#aaa;">Gold earned: 🪙 ${gold}</p><p style="color:#555;font-size:12px;margin-top:8px;">You are a true Rival. 👑</p><div style="display:flex;gap:10px;margin-top:12px;"><button class="big-btn" onclick="startGame()">▶ PLAY AGAIN</button><button class="ghost-btn" onclick="backToMenu()">↩ Menu</button></div>`;
 }
 
 function showGameOver(){
@@ -860,12 +860,7 @@ function showGameOver(){
   ov.innerHTML=`<h2>💀 GAME OVER</h2><p style="font-size:20px;margin:10px 0;color:#FFD700;">Score: ${score}</p><p style="color:#aaa;">Wave ${wave} — ${gameMode==='levels'?cfg.label+' (Level '+level+'/'+MAX_LEVEL+')':'Endless Mode'}</p><p style="color:#555;font-size:12px;margin-top:6px;">Gold earned: 🪙 ${gold}</p><div style="display:flex;gap:10px;margin-top:12px;"><button class="big-btn" onclick="startGame()">▶ PLAY AGAIN</button><button class="ghost-btn" onclick="backToMenu()">↩ Menu</button></div>`;
 }
 
-function showVictory(){
-  gameState='over';
-  const ov=document.getElementById('overlay'); ov.style.display='flex';
-  ov.innerHTML=`<h2 style="font-size:30px;">🏆 YOU WIN!</h2><p style="font-size:16px;color:#FFD700;margin:10px 0;">You conquered all 10 levels!</p><p style="color:#aaa;">Final Score: <strong style="color:#FFD700">${score}</strong></p><p style="color:#aaa;">Gold earned: 🪙 ${gold}</p><p style="color:#555;font-size:12px;margin-top:8px;">You are a true Rival. 👑</p><div style="display:flex;gap:10px;margin-top:12px;"><button class="big-btn" onclick="startGame()">▶ PLAY AGAIN</button><button class="ghost-btn" onclick="backToMenu()">↩ Menu</button></div>`;
-}
-
+function backToMenu(){
   gameState='menu'; const ov=document.getElementById('overlay'); ov.style.display='flex';
   ov.innerHTML=`<h2>⚔️ RIVALS RUSH</h2><p>Machine Gun, Daggers, or Shield — pick your style!</p><div id="mode-select"><button class="mode-btn ${gameMode==='levels'?'sel':''}" id="mb-levels" onclick="selectMode('levels')">📜 Levels</button><button class="mode-btn ${gameMode==='endless'?'sel':''}" id="mb-endless" onclick="selectMode('endless')">♾️ Endless</button></div><p id="overlay-sub" style="color:#aaa;font-size:13px;">${gameMode==='levels'?'Complete 3 waves to advance levels':'Survive as long as possible!'}</p><p style="color:#555;font-size:12px;margin-top:8px;">WASD/Arrows=Move &nbsp;|&nbsp; Hold Click/Space=Shoot &nbsp;|&nbsp; 1/2/3=Weapon</p><button class="big-btn" onclick="startGame()">▶ START GAME</button><p style="color:#444;font-size:11px;margin-top:12px;">F or ⛶ for fullscreen</p>`;
 }
