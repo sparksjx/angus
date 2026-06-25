@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rivals Rush ⚔️</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:100%; min-height:100vh; background:#0d0d1a; color:#fff; font-family:'Inter',sans-serif; overflow-x:hidden; }
+
+  /* NAV */
+  nav { position:fixed; top:0; left:0; width:100%; background:rgba(13,13,26,0.92); backdrop-filter:blur(8px); border-bottom:1px solid rgba(255,215,0,0.15); z-index:100; display:flex; align-items:center; justify-content:space-between; padding:14px 32px; }
+  .nav-logo { font-family:'Press Start 2P',monospace; font-size:14px; color:#FFD700; text-decoration:none; letter-spacing:1px; }
+  .nav-links { display:flex; gap:28px; align-items:center; }
+  .nav-links a { color:#ccc; text-decoration:none; font-size:14px; font-weight:600; transition:color 0.2s; }
+  .nav-links a:hover { color:#FFD700; }
+  .nav-play { background:#FFD700; color:#000 !important; padding:8px 20px; border-radius:6px; font-weight:700 !important; }
+  .nav-play:hover { background:#FFC200 !important; color:#000 !important; }
+
+  /* HERO */
+  .hero { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:100px 24px 60px; position:relative; overflow:hidden; }
+  .hero-bg { position:absolute; inset:0; background:radial-gradient(ellipse at 50% 40%, rgba(127,119,221,0.18) 0%, transparent 65%), radial-gradient(ellipse at 80% 80%, rgba(255,107,53,0.1) 0%, transparent 50%); pointer-events:none; }
+  .pixel-title { font-family:'Press Start 2P',monospace; font-size:clamp(28px,6vw,64px); color:#FFD700; line-height:1.4; margin-bottom:12px; text-shadow:0 0 40px rgba(255,215,0,0.4); }
+  .hero-sub { font-size:clamp(14px,2vw,20px); color:#aaa; margin-bottom:40px; max-width:520px; line-height:1.7; }
+  .hero-btns { display:flex; gap:16px; flex-wrap:wrap; justify-content:center; }
+  .btn-primary { padding:16px 40px; background:#FFD700; color:#000; border:none; border-radius:8px; font-size:16px; font-weight:700; cursor:pointer; font-family:'Inter',sans-serif; text-decoration:none; display:inline-block; transition:background 0.2s,transform 0.1s; }
+  .btn-primary:hover { background:#FFC200; transform:translateY(-2px); }
+  .btn-secondary { padding:16px 40px; background:transparent; color:#FFD700; border:2px solid #FFD700; border-radius:8px; font-size:16px; font-weight:700; cursor:pointer; font-family:'Inter',sans-serif; text-decoration:none; display:inline-block; transition:background 0.2s,transform 0.1s; }
+  .btn-secondary:hover { background:rgba(255,215,0,0.1); transform:translateY(-2px); }
+
+  /* FLOATING PIXELS */
+  .pixels { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
+  .px { position:absolute; border-radius:2px; animation:float linear infinite; opacity:0.15; }
+  @keyframes float { 0%{transform:translateY(100vh) rotate(0deg);opacity:0;} 10%{opacity:0.15;} 90%{opacity:0.15;} 100%{transform:translateY(-100px) rotate(360deg);opacity:0;} }
+
+  /* FEATURES */
+  .features { padding:80px 24px; max-width:1100px; margin:0 auto; }
+  .section-title { font-family:'Press Start 2P',monospace; font-size:clamp(16px,3vw,24px); color:#FFD700; text-align:center; margin-bottom:48px; }
+  .feature-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:24px; }
+  .feature-card { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:28px 24px; transition:border-color 0.2s,transform 0.2s; }
+  .feature-card:hover { border-color:rgba(255,215,0,0.3); transform:translateY(-4px); }
+  .feature-icon { font-size:36px; margin-bottom:14px; }
+  .feature-card h3 { font-size:15px; font-weight:700; margin-bottom:8px; color:#fff; }
+  .feature-card p { font-size:13px; color:#888; line-height:1.7; }
+
+  /* WEAPONS */
+  .weapons { padding:60px 24px 80px; background:rgba(255,255,255,0.02); border-top:1px solid rgba(255,255,255,0.06); border-bottom:1px solid rgba(255,255,255,0.06); }
+  .weapons-inner { max-width:900px; margin:0 auto; }
+  .weapon-row { display:flex; gap:20px; justify-content:center; flex-wrap:wrap; margin-top:40px; }
+  .weapon-card { background:rgba(0,0,0,0.4); border:2px solid #333; border-radius:10px; padding:20px 24px; width:240px; text-align:center; }
+  .weapon-card.mg { border-color:#FF6B35; }
+  .weapon-card.dag { border-color:#C0C0C0; }
+  .weapon-card.shd { border-color:#85B7EB; }
+  .weapon-card .wicon { font-size:40px; margin-bottom:10px; }
+  .weapon-card h3 { font-size:14px; font-weight:700; margin-bottom:6px; }
+  .weapon-card p { font-size:12px; color:#777; line-height:1.6; }
+
+  /* LEVELS PREVIEW */
+  .levels { padding:80px 24px; max-width:900px; margin:0 auto; }
+  .level-list { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:12px; margin-top:36px; }
+  .level-pill { border-radius:8px; padding:12px 14px; font-size:12px; font-weight:700; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); }
+  .level-pill span { display:block; font-size:10px; color:#888; font-weight:400; margin-top:3px; }
+
+  /* CTA */
+  .cta { padding:80px 24px; text-align:center; }
+  .cta h2 { font-family:'Press Start 2P',monospace; font-size:clamp(14px,3vw,22px); color:#FFD700; margin-bottom:16px; }
+  .cta p { color:#888; margin-bottom:32px; font-size:15px; }
+
+  /* FOOTER */
+  footer { border-top:1px solid rgba(255,255,255,0.06); padding:24px; text-align:center; color:#444; font-size:13px; }
+  footer a { color:#FFD700; text-decoration:none; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">⚔️ RIVALS RUSH</a>
+  <div class="nav-links">
+    <a href="how-to-play.html">How to Play</a>
+    <a href="game.html">Leaderboard</a>
+    <a href="game.html" class="nav-play">▶ Play Now</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="pixels" id="pixels"></div>
+  <div class="pixel-title">RIVALS RUSH</div>
+  <p class="hero-sub">Survive 10 levels of pixel-art chaos. Upgrade your arsenal, outlast the bosses, claim the top spot.</p>
+  <div class="hero-btns">
+    <a href="game.html" class="btn-primary">▶ Play Now</a>
+    <a href="how-to-play.html" class="btn-secondary">How to Play</a>
+  </div>
+</section>
+
+<section class="features">
+  <div class="section-title">WHY PLAY?</div>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-icon">🔫</div>
+      <h3>3 Unique Weapons</h3>
+      <p>Hold-to-fire Machine Gun, lightning-fast Daggers, and a block-and-bash Shield. Each with its own upgrade tree.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">💀</div>
+      <h3>4 Boss Types</h3>
+      <p>The Titan charges, the Lich fires homing skulls, the Bomber plants mines, the Phantom teleports and splits.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⬆️</div>
+      <h3>Upgrades + Shop</h3>
+      <p>Pick upgrade cards between every wave. Spend gold in the shop on heals, ammo, and permanent stat boosts.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🏆</div>
+      <h3>Online Leaderboard</h3>
+      <p>Submit your score and compete globally. Can you reach Level 10 Nightmare and claim the #1 spot?</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🌱</div>
+      <h3>10 Levels of Difficulty</h3>
+      <p>From Rookie to Nightmare — each level ramps up enemy count, speed, HP, and boss spawn chance.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🎮</div>
+      <h3>Instant Play</h3>
+      <p>No download, no install. Runs in any browser. Hit F for true fullscreen and go.</p>
+    </div>
+  </div>
+</section>
+
+<section class="weapons">
+  <div class="weapons-inner">
+    <div class="section-title">CHOOSE YOUR WEAPON</div>
+    <div class="weapon-row">
+      <div class="weapon-card mg">
+        <div class="wicon">🔫</div>
+        <h3 style="color:#FF6B35">Machine Gun</h3>
+        <p>Hold to spray bullets. Limited ammo — reload with R. Upgrades: Overclocked, Spread Shot, Armour Piercing.</p>
+      </div>
+      <div class="weapon-card dag">
+        <div class="wicon">🗡️</div>
+        <h3 style="color:#C0C0C0">Daggers</h3>
+        <p>Click to slash nearby enemies. Fast cooldown. Upgrades: Triple Strike, Longer Reach, Sharpened Blades.</p>
+      </div>
+      <div class="weapon-card shd">
+        <div class="wicon">🛡️</div>
+        <h3 style="color:#85B7EB">Shield</h3>
+        <p>Absorbs hits while equipped. Click to bash enemies back and restore shield. Upgrades: Spike Shield, Full Block.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="levels">
+  <div class="section-title">10 LEVELS OF PAIN</div>
+  <div class="level-list">
+    <div class="level-pill" style="border-color:#4CAF50;color:#4CAF50">🌱 Lv1 — Rookie<span>Scouts only</span></div>
+    <div class="level-pill" style="border-color:#66BB6A;color:#66BB6A">🟢 Lv2 — Easy<span>Brutes appear</span></div>
+    <div class="level-pill" style="border-color:#42A5F5;color:#42A5F5">🔵 Lv3 — Normal<span>Rangers + bosses</span></div>
+    <div class="level-pill" style="border-color:#29B6F6;color:#29B6F6">🔵 Lv4 — Normal+<span>More enemies</span></div>
+    <div class="level-pill" style="border-color:#FFA726;color:#FFA726">🟡 Lv5 — Tricky<span>Full enemy mix</span></div>
+    <div class="level-pill" style="border-color:#FF9800;color:#FF9800">🟡 Lv6 — Tricky+<span>Brute-heavy</span></div>
+    <div class="level-pill" style="border-color:#EF6C00;color:#EF6C00">🟠 Lv7 — Hard<span>Faster enemies</span></div>
+    <div class="level-pill" style="border-color:#E53935;color:#E53935">🔴 Lv8 — Very Hard<span>High damage</span></div>
+    <div class="level-pill" style="border-color:#B71C1C;color:#B71C1C">🔴 Lv9 — Brutal<span>Elite enemies</span></div>
+    <div class="level-pill" style="border-color:#7F77DD;color:#7F77DD">💀 Lv10 — Nightmare<span>Boss guaranteed</span></div>
+  </div>
+</section>
+
+<section class="cta">
+  <h2>READY TO FIGHT?</h2>
+  <p>10 levels. 3 weapons. 4 bosses. One leaderboard.</p>
+  <a href="game.html" class="btn-primary" style="font-size:18px;padding:18px 48px;">▶ Start Playing</a>
+</section>
+
+<footer>
+  Built with ❤️ by <a href="#">Sparks Learning</a> &nbsp;·&nbsp; <a href="how-to-play.html">How to Play</a> &nbsp;·&nbsp; <a href="game.html">Leaderboard</a>
+</footer>
+
+<script>
+  // Spawn floating pixel particles in hero
+  const container = document.getElementById('pixels');
+  const colors = ['#FFD700','#FF6B35','#85B7EB','#5DCAA5','#D4537E','#7F77DD'];
+  for(let i=0;i<30;i++){
+    const el=document.createElement('div');
+    el.className='px';
+    const size=4+Math.random()*10;
+    el.style.cssText=`width:${size}px;height:${size}px;left:${Math.random()*100}%;background:${colors[Math.floor(Math.random()*colors.length)]};animation-duration:${6+Math.random()*12}s;animation-delay:${-Math.random()*14}s;`;
+    container.appendChild(el);
+  }
+</script>
+</body>
+</html>
