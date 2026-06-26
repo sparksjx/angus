@@ -3,867 +3,191 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Play — Rivals Rush ⚔️</title>
+<title>How to Play — Rivals Rush ⚔️</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html, body { width: 100%; height: 100%; background: #1a1a2e; overflow: hidden; font-family: monospace; }
-  #game-container { position: relative; width: 100vw; height: calc(100vh - 46px); margin-top:46px; background: #1a1a2e; overflow: hidden; }
-  canvas { display: block; image-rendering: pixelated; position: absolute; top: 0; left: 0; }
-  #ui { position: absolute; top: 0; left: 0; width: 100%; padding: 10px 16px; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.55); z-index: 10; }
-  #ui span { color: #fff; font-size: 15px; font-weight: bold; }
-  #weapon-bar { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 10; }
-  .wpn-slot { width: 64px; height: 64px; background: rgba(0,0,0,0.65); border: 2px solid #555; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; color: #fff; font-size: 11px; gap: 3px; }
-  .wpn-slot.active { border-color: #FFD700; background: rgba(255,215,0,0.2); }
-  .wpn-slot span { font-size: 22px; }
-  #overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 20; color: #fff; text-align: center; padding: 20px; }
-  #overlay h2 { font-size: 40px; margin: 0 0 10px; color: #FFD700; font-family: monospace; letter-spacing: 2px; }
-  #overlay p { font-size: 15px; color: #ccc; margin: 5px 0; }
-  .big-btn { margin-top: 16px; padding: 12px 36px; background: #FFD700; border: none; border-radius: 8px; font-size: 17px; font-weight: bold; cursor: pointer; color: #000; font-family: monospace; }
-  .big-btn:hover { background: #FFC200; }
-  .ghost-btn { padding: 10px 28px; background: transparent; border: 2px solid #FFD700; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; color: #FFD700; font-family: monospace; margin-top: 10px; }
-  .ghost-btn:hover { background: rgba(255,215,0,0.12); }
-  #mode-select { display: flex; gap: 14px; margin: 14px 0; }
-  .mode-btn { padding: 10px 24px; border: 2px solid #FFD700; background: transparent; color: #FFD700; border-radius: 8px; cursor: pointer; font-family: monospace; font-size: 14px; }
-  .mode-btn:hover, .mode-btn.sel { background: #FFD700; color: #000; }
-  #cooldown-bar { position: absolute; bottom: 84px; left: 50%; transform: translateX(-50%); width: 200px; height: 7px; background: rgba(255,255,255,0.2); border-radius: 4px; z-index: 10; }
-  #cooldown-fill { height: 100%; background: #FF6B35; border-radius: 4px; width: 100%; }
-  #ammo-bar-wrap { position: absolute; bottom: 94px; left: 50%; transform: translateX(-50%); width: 200px; z-index: 10; text-align: center; display: none; }
-  #ammo-bar-label { color: #FF6B35; font-size: 10px; margin-bottom: 2px; }
-  #ammo-bar-bg { width: 100%; height: 5px; background: rgba(255,255,255,0.15); border-radius: 3px; }
-  #ammo-bar-fill { height: 100%; background: #FF6B35; border-radius: 3px; width: 100%; transition: width 0.05s; }
-  #shield-bar-wrap { position: absolute; bottom: 84px; left: 14px; z-index: 10; display: none; }
-  #shield-bar-label { color: #85B7EB; font-size: 11px; margin-bottom: 3px; }
-  #shield-bar-bg { width: 130px; height: 7px; background: rgba(255,255,255,0.2); border-radius: 4px; }
-  #shield-bar-fill { height: 100%; background: #85B7EB; border-radius: 4px; width: 100%; }
-  #boss-bar-wrap { position: absolute; top: 52px; left: 50%; transform: translateX(-50%); width: 340px; z-index: 10; display: none; text-align: center; }
-  #boss-bar-name { color: #fff; font-size: 13px; margin-bottom: 4px; font-weight: bold; letter-spacing: 1px; }
-  #boss-bar-bg { width: 100%; height: 10px; background: rgba(255,255,255,0.15); border-radius: 5px; }
-  #boss-bar-fill { height: 100%; background: #7F77DD; border-radius: 5px; width: 100%; transition: width 0.1s; }
-  #controls-hint { position: absolute; bottom: 84px; right: 14px; color: rgba(255,255,255,0.4); font-size: 11px; z-index: 10; line-height: 1.7; text-align: right; }
-  #wave-announce { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); color: #FFD700; font-size: 30px; font-weight: bold; font-family: monospace; pointer-events: none; z-index: 15; opacity: 0; transition: opacity 0.3s; text-align: center; line-height: 1.4; }
-  #fs-btn { position: absolute; top: 10px; right: 14px; background: rgba(0,0,0,0.5); border: 1px solid #555; border-radius: 6px; color: #aaa; font-size: 18px; cursor: pointer; z-index: 30; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; }
-  #fs-btn:hover { border-color: #FFD700; color: #FFD700; }
-  #gold-display { color: #FFD700 !important; }
-  #upgrade-screen { position: absolute; inset: 0; background: rgba(0,0,0,0.92); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 25; color: #fff; padding: 20px; }
-  #upgrade-screen h2 { font-size: 28px; color: #FFD700; margin-bottom: 6px; }
-  #upgrade-screen .sub { color: #aaa; font-size: 13px; margin-bottom: 20px; }
-  #upgrade-cards { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; margin-bottom: 20px; }
-  .upgrade-card { width: 170px; background: rgba(255,255,255,0.05); border: 2px solid #444; border-radius: 10px; padding: 18px 14px; cursor: pointer; text-align: center; transition: border-color 0.15s, background 0.15s; }
-  .upgrade-card:hover { border-color: #FFD700; background: rgba(255,215,0,0.08); }
-  .upgrade-card .uc-icon { font-size: 32px; margin-bottom: 8px; }
-  .upgrade-card .uc-name { font-size: 13px; font-weight: bold; color: #fff; margin-bottom: 4px; }
-  .upgrade-card .uc-desc { font-size: 11px; color: #aaa; line-height: 1.5; }
-  .upgrade-card.weapon { border-color: #FF6B35; }
-  .upgrade-card.weapon:hover { border-color: #FF9966; background: rgba(255,107,53,0.08); }
-  .upgrade-card.player { border-color: #85B7EB; }
-  .upgrade-card.shield { border-color: #85B7EB; }
-  #shop-screen { position: absolute; inset: 0; background: rgba(0,0,0,0.92); display: none; flex-direction: column; align-items: center; justify-content: flex-start; z-index: 25; color: #fff; padding: 24px 20px; overflow-y: auto; }
-  #shop-screen h2 { font-size: 28px; color: #FFD700; margin-bottom: 4px; }
-  #shop-screen .gold-info { color: #FFD700; font-size: 16px; margin-bottom: 16px; }
-  #shop-items { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; margin-bottom: 16px; max-width: 800px; }
-  .shop-item { width: 155px; background: rgba(255,255,255,0.05); border: 2px solid #444; border-radius: 10px; padding: 14px 12px; text-align: center; }
-  .shop-item .si-icon { font-size: 28px; margin-bottom: 6px; }
-  .shop-item .si-name { font-size: 12px; font-weight: bold; color: #fff; margin-bottom: 3px; }
-  .shop-item .si-desc { font-size: 10px; color: #888; line-height: 1.4; margin-bottom: 10px; }
-  .shop-item .si-cost { font-size: 13px; color: #FFD700; margin-bottom: 8px; font-weight: bold; }
-  .shop-item button { width: 100%; padding: 6px 0; background: #FFD700; border: none; border-radius: 5px; font-size: 12px; font-weight: bold; cursor: pointer; color: #000; font-family: monospace; }
-  .shop-item button:hover { background: #FFC200; }
-  .shop-item button:disabled { background: #444; color: #666; cursor: default; }
-  .shop-item.sold-out { opacity: 0.4; }
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:100%; min-height:100vh; background:#0d0d1a; color:#fff; font-family:'Inter',sans-serif; }
+  nav { position:fixed; top:0; left:0; width:100%; background:rgba(13,13,26,0.92); backdrop-filter:blur(8px); border-bottom:1px solid rgba(255,215,0,0.15); z-index:100; display:flex; align-items:center; justify-content:space-between; padding:14px 32px; }
+  .nav-logo { font-family:'Press Start 2P',monospace; font-size:14px; color:#FFD700; text-decoration:none; }
+  .nav-links { display:flex; gap:28px; align-items:center; }
+  .nav-links a { color:#ccc; text-decoration:none; font-size:14px; font-weight:600; transition:color 0.2s; }
+  .nav-links a:hover { color:#FFD700; }
+  .nav-play { background:#FFD700; color:#000 !important; padding:8px 20px; border-radius:6px; font-weight:700 !important; }
 
-  /* NAV */
-  #site-nav { position:fixed; top:0; left:0; width:100%; background:rgba(13,13,26,0.95); border-bottom:1px solid rgba(255,215,0,0.15); z-index:200; display:flex; align-items:center; justify-content:space-between; padding:10px 24px; height:46px; }
-  .sn-logo { font-family:monospace; font-size:12px; color:#FFD700; text-decoration:none; font-weight:bold; }
-  .sn-links { display:flex; gap:20px; align-items:center; }
-  .sn-links a { color:#aaa; text-decoration:none; font-size:13px; font-weight:600; transition:color 0.2s; }
-  .sn-links a:hover { color:#FFD700; }
+  .page { max-width:820px; margin:0 auto; padding:110px 24px 80px; }
+  .page-title { font-family:'Press Start 2P',monospace; font-size:clamp(16px,3vw,26px); color:#FFD700; margin-bottom:10px; }
+  .page-sub { color:#666; font-size:14px; margin-bottom:48px; }
+
+  .section { margin-bottom:48px; }
+  .section h2 { font-family:'Press Start 2P',monospace; font-size:13px; color:#FFD700; margin-bottom:20px; padding-bottom:10px; border-bottom:1px solid rgba(255,215,0,0.2); }
+
+  .key-grid { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:8px; }
+  .key { background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:6px; padding:8px 14px; font-size:13px; font-weight:700; display:inline-flex; align-items:center; gap:8px; }
+  .key .kbind { background:#FFD700; color:#000; border-radius:4px; padding:2px 8px; font-size:11px; font-weight:700; font-family:monospace; }
+
+  .wpn-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .wpn-table th { text-align:left; color:#FFD700; padding:10px 12px; border-bottom:1px solid rgba(255,215,0,0.2); font-size:12px; }
+  .wpn-table td { padding:12px 12px; border-bottom:1px solid rgba(255,255,255,0.05); color:#ccc; vertical-align:top; line-height:1.6; }
+  .wpn-table tr:last-child td { border-bottom:none; }
+
+  .boss-list { display:grid; gap:14px; }
+  .boss-card { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:16px 18px; display:flex; gap:14px; align-items:flex-start; }
+  .boss-icon { font-size:28px; flex-shrink:0; }
+  .boss-card h3 { font-size:14px; font-weight:700; margin-bottom:4px; }
+  .boss-card p { font-size:12px; color:#777; line-height:1.6; }
+
+  .tip-list { list-style:none; display:grid; gap:10px; }
+  .tip-list li { background:rgba(255,215,0,0.04); border-left:3px solid #FFD700; padding:12px 16px; border-radius:0 6px 6px 0; font-size:13px; color:#ccc; line-height:1.6; }
+
+  .lvl-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .lvl-table th { text-align:left; color:#FFD700; padding:8px 12px; border-bottom:1px solid rgba(255,215,0,0.2); font-size:11px; }
+  .lvl-table td { padding:10px 12px; border-bottom:1px solid rgba(255,255,255,0.04); color:#bbb; }
+
+  footer { border-top:1px solid rgba(255,255,255,0.06); padding:24px; text-align:center; color:#444; font-size:13px; }
+  footer a { color:#FFD700; text-decoration:none; }
 </style>
 </head>
 <body>
 
-<nav id="site-nav">
-  <a class="sn-logo" href="index.html">⚔️ RIVALS RUSH</a>
-  <div class="sn-links">
-    <a href="index.html">Home</a>
-    <a href="how-to-play.html">How to Play</a>
+<nav>
+  <a class="nav-logo" href="index.html">⚔️ RIVALS RUSH</a>
+  <div class="nav-links">
+    <a href="how-to-play.html" style="color:#FFD700">How to Play</a>
+    <a href="game.html" class="nav-play">▶ Play Now</a>
   </div>
 </nav>
 
-<div id="game-container">
-  <canvas id="gc"></canvas>
-  <div id="ui">
-    <span id="hp-display">❤️ 100</span>
-    <span id="wave-display">Wave 1</span>
-    <span id="score-display">Score: 0</span>
-    <span id="gold-display">🪙 0</span>
-    <span id="ammo-display">🔫 MG</span>
-  </div>
-  <button id="fs-btn" title="Fullscreen (F)" onclick="toggleFS()">⛶</button>
-  <div id="boss-bar-wrap"><div id="boss-bar-name">BOSS</div><div id="boss-bar-bg"><div id="boss-bar-fill"></div></div></div>
-  <div id="ammo-bar-wrap"><div id="ammo-bar-label">AMMO</div><div id="ammo-bar-bg"><div id="ammo-bar-fill"></div></div></div>
-  <div id="cooldown-bar"><div id="cooldown-fill"></div></div>
-  <div id="shield-bar-wrap"><div id="shield-bar-label">🛡️ Shield</div><div id="shield-bar-bg"><div id="shield-bar-fill"></div></div></div>
-  <div id="controls-hint">WASD/Arrows = Move<br>Hold Click / Space = Shoot<br>1/2/3 = Weapon &nbsp; F = Fullscreen</div>
-  <div id="wave-announce"></div>
-  <div id="weapon-bar">
-    <div class="wpn-slot active" id="w0" onclick="selectWeapon(0)"><span>🔫</span>MG [1]</div>
-    <div class="wpn-slot" id="w1" onclick="selectWeapon(1)"><span>🗡️</span>Daggers [2]</div>
-    <div class="wpn-slot" id="w2" onclick="selectWeapon(2)"><span>🛡️</span>Shield [3]</div>
-  </div>
-  <div id="upgrade-screen">
-    <h2>⬆️ WAVE CLEAR!</h2>
-    <p class="sub">Pick one upgrade — choose wisely</p>
-    <div id="upgrade-cards"></div>
-    <button class="ghost-btn" onclick="openShop()">🛒 Open Shop instead</button>
-    <button class="ghost-btn" onclick="skipUpgrade()">Skip →</button>
-  </div>
-  <div id="shop-screen">
-    <h2>🛒 SHOP</h2>
-    <p class="gold-info" id="shop-gold">🪙 0 gold</p>
-    <div id="shop-items"></div>
-    <button class="big-btn" onclick="closeShop()">✓ Done — Next Wave</button>
-  </div>
-  <div id="overlay">
-    <h2>⚔️ RIVALS RUSH</h2>
-    <p>Machine Gun, Daggers, or Shield — pick your style!</p>
-    <div id="mode-select">
-      <button class="mode-btn sel" id="mb-levels" onclick="selectMode('levels')">📜 Levels</button>
-      <button class="mode-btn" id="mb-endless" onclick="selectMode('endless')">♾️ Endless</button>
+<div class="page">
+  <div class="page-title">HOW TO PLAY</div>
+  <p class="page-sub">Everything you need to survive all 10 levels</p>
+
+  <!-- CONTROLS -->
+  <div class="section">
+    <h2>🎮 CONTROLS</h2>
+    <div class="key-grid">
+      <div class="key"><span class="kbind">W A S D</span> or <span class="kbind">Arrow Keys</span> Move</div>
+      <div class="key"><span class="kbind">Mouse</span> Aim</div>
+      <div class="key"><span class="kbind">Hold Click</span> Fire / Attack</div>
+      <div class="key"><span class="kbind">Space</span> Fire / Attack</div>
+      <div class="key"><span class="kbind">1</span> Machine Gun</div>
+      <div class="key"><span class="kbind">2</span> Daggers</div>
+      <div class="key"><span class="kbind">3</span> Shield</div>
+      <div class="key"><span class="kbind">R</span> Reload MG</div>
+      <div class="key"><span class="kbind">F</span> Fullscreen</div>
     </div>
-    <p id="overlay-sub" style="color:#aaa;font-size:13px;">Survive 3 waves per level — 10 levels total</p>
-    <p style="color:#555;font-size:12px;margin-top:8px;">WASD/Arrows=Move &nbsp;|&nbsp; Hold Click/Space=Shoot &nbsp;|&nbsp; 1/2/3=Weapon</p>
-    <button class="big-btn" onclick="startGame()">▶ START GAME</button>
-    <p style="color:#444;font-size:11px;margin-top:12px;">F or ⛶ for fullscreen</p>
   </div>
+
+  <!-- WEAPONS -->
+  <div class="section">
+    <h2>🔫 WEAPONS</h2>
+    <table class="wpn-table">
+      <tr><th>Weapon</th><th>How it works</th><th>Best for</th><th>Upgrades</th></tr>
+      <tr>
+        <td><strong style="color:#FF6B35">🔫 Machine Gun</strong></td>
+        <td>Hold click or Space to spray bullets toward your mouse. Has 30 ammo — press R to reload when empty. Fast fire rate, low damage per bullet.</td>
+        <td>Kiting enemies, dealing sustained damage at range</td>
+        <td>High Velocity Rounds, Overclocked, Armour Piercing, Spread Shot</td>
+      </tr>
+      <tr>
+        <td><strong style="color:#C0C0C0">🗡️ Daggers</strong></td>
+        <td>Click to slash all nearby enemies in range. Instant, no projectile. Short cooldown. Hits deal good burst damage.</td>
+        <td>Close-quarters, high density groups, fast clears</td>
+        <td>Sharpened Daggers, Longer Reach, Triple Strike</td>
+      </tr>
+      <tr>
+        <td><strong style="color:#85B7EB">🛡️ Shield</strong></td>
+        <td>While equipped, incoming damage hits your shield bar first. Click to bash nearby enemies back hard and restore 30 shield. Blocks enemy projectiles on bash. Shield slowly regens over time.</td>
+        <td>Tanking hits, surviving boss waves, protecting against ranged</td>
+        <td>Reinforced Shield, Quick Recovery, Spike Shield, Full Block</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- GAME LOOP -->
+  <div class="section">
+    <h2>⚙️ GAME LOOP</h2>
+    <ul class="tip-list">
+      <li>Each <strong>level</strong> has 3 waves. Clear all 3 waves to advance to the next level.</li>
+      <li>After each wave, choose <strong>one upgrade card</strong> from 3 random options — or open the <strong>Shop</strong> to spend gold instead.</li>
+      <li>Enemies drop <strong>gold</strong> when killed. Spend gold in the shop on heals, ammo, and permanent buffs.</li>
+      <li>Bosses spawn randomly mid-wave (more likely at higher levels). Kill the boss for a big gold bonus.</li>
+      <li>Beat <strong>Level 10 Wave 3</strong> to win. A victory screen will show your final score.</li>
+    </ul>
+  </div>
+
+  <!-- ENEMIES -->
+  <div class="section">
+    <h2>👾 ENEMIES</h2>
+    <table class="wpn-table">
+      <tr><th>Enemy</th><th>Behaviour</th><th>Watch out for</th></tr>
+      <tr><td><strong style="color:#E24B4A">🟥 Scout</strong></td><td>Fast melee charger. Sprints when close to you.</td><td>Gets dangerous in large groups</td></tr>
+      <tr><td><strong style="color:#A32D2D">🟫 Brute</strong></td><td>Slow but tanky. Fires a shockwave ring every 3 seconds.</td><td>The ring hits in all directions — keep distance</td></tr>
+      <tr><td><strong style="color:#D85A30">🟧 Ranger</strong></td><td>Stays at range and fires a fast aimed shot every ~1.5 sec.</td><td>Prioritise killing Rangers early</td></tr>
+    </table>
+  </div>
+
+  <!-- BOSSES -->
+  <div class="section">
+    <h2>💀 BOSSES</h2>
+    <div class="boss-list">
+      <div class="boss-card">
+        <div class="boss-icon">💀</div>
+        <div><h3 style="color:#7F77DD">The Titan</h3><p>Massive armoured brute. Builds momentum and charges at you at high speed. Also fires an 8-way shockwave ring. Use the Shield bash to stagger him, or the Machine Gun to shred HP from range.</p></div>
+      </div>
+      <div class="boss-card">
+        <div class="boss-icon">🔮</div>
+        <div><h3 style="color:#1D9E75">The Lich</h3><p>Fires volleys of 6 homing skulls that track your position. Teleports away if you get close. Keep moving in wide arcs to dodge skulls, then close in fast with Daggers.</p></div>
+      </div>
+      <div class="boss-card">
+        <div class="boss-icon">💣</div>
+        <div><h3 style="color:#BA7517">The Bomber</h3><p>Plants mines every 1.3 seconds and lobs grenades at you. Watch for the pulsing orange ring — that's a live mine. Strafe around him and avoid standing still.</p></div>
+      </div>
+      <div class="boss-card">
+        <div class="boss-icon">👻</div>
+        <div><h3 style="color:#D4537E">The Phantom</h3><p>Teleports directly next to you and spawns 2 ghost clones that fade after a few seconds. Also dash-attacks repeatedly. Use Shield bash to knock clones back and create breathing room.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEVEL TABLE -->
+  <div class="section">
+    <h2>📈 DIFFICULTY LEVELS</h2>
+    <table class="lvl-table">
+      <tr><th>Level</th><th>Difficulty</th><th>Enemies/Wave</th><th>Boss Chance</th><th>Notes</th></tr>
+      <tr><td>1</td><td style="color:#4CAF50">🌱 Rookie</td><td>4</td><td>None</td><td>Scouts only — learn the controls</td></tr>
+      <tr><td>2</td><td style="color:#66BB6A">🟢 Easy</td><td>6</td><td>None</td><td>Brutes appear</td></tr>
+      <tr><td>3</td><td style="color:#42A5F5">🔵 Normal</td><td>8</td><td>10%</td><td>Rangers introduced</td></tr>
+      <tr><td>4</td><td style="color:#29B6F6">🔵 Normal+</td><td>10</td><td>20%</td><td>More enemies per wave</td></tr>
+      <tr><td>5</td><td style="color:#FFA726">🟡 Tricky</td><td>12</td><td>30%</td><td>All enemy types in full mix</td></tr>
+      <tr><td>6</td><td style="color:#FF9800">🟡 Tricky+</td><td>13</td><td>40%</td><td>Brutes become majority</td></tr>
+      <tr><td>7</td><td style="color:#EF6C00">🟠 Hard</td><td>14</td><td>50%</td><td>Noticeably faster movement</td></tr>
+      <tr><td>8</td><td style="color:#E53935">🔴 Very Hard</td><td>16</td><td>60%</td><td>High HP and damage</td></tr>
+      <tr><td>9</td><td style="color:#B71C1C">🔴 Brutal</td><td>18</td><td>75%</td><td>Elite-tier stats</td></tr>
+      <tr><td>10</td><td style="color:#7F77DD">💀 Nightmare</td><td>20</td><td>100% (Wave 3)</td><td>Boss guaranteed — maximum everything</td></tr>
+    </table>
+  </div>
+
+  <!-- TIPS -->
+  <div class="section">
+    <h2>💡 PRO TIPS</h2>
+    <ul class="tip-list">
+      <li><strong>Reload before you need to.</strong> Running out of MG ammo mid-wave is deadly. Reload between enemy clusters.</li>
+      <li><strong>Switch weapons mid-fight.</strong> MG to whittle down a group, then Daggers to finish them off fast.</li>
+      <li><strong>Shield absorbs before HP.</strong> If you're low on health, switch to Shield to let it take hits while you recover.</li>
+      <li><strong>Kill Rangers first.</strong> Their shots add up fast when you're dodging melee enemies at the same time.</li>
+      <li><strong>Save gold for big purchases.</strong> Full Heal (150g) and Max Shield upgrades are worth hoarding for.</li>
+      <li><strong>Spread Shot + Overclocked</strong> is the strongest MG build — wide spray with fast fire rate shreds crowds.</li>
+      <li><strong>Triple Strike Daggers</strong> is insane for bosses — three hits per click with no cooldown reset.</li>
+      <li><strong>The Lich teleports away when you get close</strong> — throw daggers first, then chase it down.</li>
+    </ul>
+  </div>
+
 </div>
 
-<script>
-const canvas = document.getElementById('gc');
-const ctx = canvas.getContext('2d');
-let W, H;
-function resize(){ W=window.innerWidth; H=window.innerHeight-46; canvas.width=W; canvas.height=H; }
-resize(); window.addEventListener('resize', resize);
-function toggleFS(){ if(!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
+<footer>
+  <a href="index.html">Home</a> &nbsp;·&nbsp; <a href="game.html">Play</a> &nbsp;·&nbsp; Built with ❤️ by <a href="#">Sparks Learning</a>
+</footer>
 
-let gameMode='levels', gameState='menu';
-let player, enemies, projectiles, particles, mines;
-let score, wave, hp, maxHp, gold, shield, maxShield, shieldRegenTimer;
-let frameCount, currentWeapon, cooldown, cooldownMax;
-let keys, mousePos, waveTimer, waveClearing, level, announceTimer;
-let activeBoss=null, mouseDown=false;
-let mgAmmo, mgMaxAmmo, mgReloading, mgReloadTimer;
-
-let buffs={};
-function initBuffs(){
-  buffs={mgDmg:0,mgCd:0,mgPierce:false,mgSpray:false,
-    daggerDmg:0,daggerRange:0,daggerTriple:false,
-    shieldCapacity:0,shieldRegenRate:0,shieldSpike:false,shieldBlock:false,
-    playerSpd:0,playerHpMax:0,playerRegen:0,goldMult:1};
-}
-
-const MG_MAX_AMMO = 30;
-const MG_RELOAD_FRAMES = 120;
-
-function getWeapon(i){
-  const base=[
-    {name:'MG',     cd:6,  color:'#FF6B35',proj:true, shield:false,dmg:12,range:0},
-    {name:'Daggers',cd:18, color:'#C0C0C0',proj:false,shield:false,dmg:24,range:90},
-    {name:'Shield', cd:55, color:'#85B7EB',proj:false,shield:true, dmg:18,range:110}
-  ][i];
-  if(i===0){ base.dmg+=buffs.mgDmg*5; base.cd=Math.max(3,base.cd-buffs.mgCd*1); }
-  if(i===1){ base.dmg+=buffs.daggerDmg*8; base.range+=buffs.daggerRange*20; }
-  if(i===2){ base.dmg+=buffs.shieldCapacity*5; }
-  return base;
-}
-
-// ─── ENEMY ATTACK PATTERNS ───
-// Each enemy type has its own attack behaviour
-const BASE_ENEMIES = [
-  // Scout: fast melee charger — rushes player and deals quick hits
-  {name:'Scout', hp:30, spd:1.5, color:'#E24B4A', size:10, dmg:8, score:10,
-   attack: function(en){
-     // already damages on contact — sprint boost when close
-     const dist=Math.hypot(player.x-en.x,player.y-en.y);
-     if(dist<120) en._spd=2.4; else en._spd=en.baseSpd;
-   }},
-  // Brute: stomps — fires a shockwave ring every 3 sec
-  {name:'Brute', hp:90, spd:0.75, color:'#A32D2D', size:17, dmg:20, score:25,
-   attack: function(en){
-     en.atkTimer=(en.atkTimer||0)+1;
-     if(en.atkTimer>180){
-       en.atkTimer=0;
-       for(let a=0;a<6;a++){
-         const ang=(a/6)*Math.PI*2;
-         projectiles.push({x:en.x,y:en.y,vx:Math.cos(ang)*3.5,vy:Math.sin(ang)*3.5,color:'#A32D2D',owner:'enemy',dmg:15,life:60,size:6,pierce:0});
-       }
-       spawnParticle(en.x,en.y,'#A32D2D',12);
-     }
-   }},
-  // Ranger: long-range sniper — aims and fires a fast shot
-  {name:'Ranger', hp:45, spd:1.0, color:'#D85A30', size:11, dmg:14, score:20,
-   attack: function(en){
-     en.atkTimer=(en.atkTimer||0)+1;
-     const dist=Math.hypot(player.x-en.x,player.y-en.y);
-     if(en.atkTimer>80&&dist<350){
-       en.atkTimer=0;
-       const dx=player.x-en.x,dy=player.y-en.y,d=Math.hypot(dx,dy)||1;
-       projectiles.push({x:en.x,y:en.y,vx:(dx/d)*7,vy:(dy/d)*7,color:'#F0A060',owner:'enemy',dmg:14,life:90,size:5,pierce:0});
-       spawnParticle(en.x,en.y,'#D85A30',5);
-     }
-   }},
-];
-
-// ─── BOSS DEFINITIONS ───
-const BOSS_TYPES = [
-  {
-    id:'titan', name:'💀 THE TITAN', desc:'Armoured brute — charges and quakes',
-    color:'#533489', size:32, baseHp:600, spd:1.1, dmg:28, score:200,
-    special: function(en){
-      en.st=en.st||{cd:0,charging:false,cvx:0,cvy:0};
-      en.st.cd++;
-      if(!en.st.charging&&en.st.cd>160){
-        en.st.cd=0; en.st.charging=true;
-        const dx=player.x-en.x,dy=player.y-en.y,d=Math.hypot(dx,dy)||1;
-        en.st.cvx=(dx/d)*15; en.st.cvy=(dy/d)*15;
-        announce('💀 TITAN CHARGES!');
-        spawnParticle(en.x,en.y,'#533489',20);
-      }
-      if(en.st.charging){
-        en.x+=en.st.cvx; en.y+=en.st.cvy;
-        en.st.cvx*=0.91; en.st.cvy*=0.91;
-        spawnParticle(en.x,en.y,'#533489',3);
-        if(Math.abs(en.st.cvx)<0.4) en.st.charging=false;
-        if(Math.hypot(player.x-en.x,player.y-en.y)<52&&frameCount%8===0) takeDamage(18,en);
-      }
-      // also stomps shockwave
-      en.st.stomp=(en.st.stomp||0)+1;
-      if(en.st.stomp>240){
-        en.st.stomp=0;
-        for(let a=0;a<8;a++){
-          const ang=(a/8)*Math.PI*2;
-          projectiles.push({x:en.x,y:en.y,vx:Math.cos(ang)*4,vy:Math.sin(ang)*4,color:'#533489',owner:'enemy',dmg:12,life:55,size:7,pierce:0});
-        }
-      }
-    }
-  },
-  {
-    id:'lich', name:'🔮 THE LICH', desc:'Undead mage — homing skull volleys',
-    color:'#1D9E75', size:24, baseHp:380, spd:0.8, dmg:14, score:220,
-    special: function(en){
-      en.st=en.st||{cd:0};
-      en.st.cd++;
-      if(en.st.cd>110){
-        en.st.cd=0;
-        for(let i=0;i<6;i++){
-          const ang=(i/6)*Math.PI*2;
-          projectiles.push({x:en.x,y:en.y,vx:Math.cos(ang)*3,vy:Math.sin(ang)*3,color:'#9FE1CB',owner:'enemy',dmg:10,life:220,size:5,homing:true,pierce:0});
-        }
-        spawnParticle(en.x,en.y,'#1D9E75',14);
-        announce('🔮 LICH UNLEASHES SKULLS!');
-      }
-      // also teleports away if player gets close
-      const dist=Math.hypot(player.x-en.x,player.y-en.y);
-      if(dist<100){
-        const ang=Math.random()*Math.PI*2;
-        en.x=Math.max(30,Math.min(W-30,en.x+Math.cos(ang)*200));
-        en.y=Math.max(60,Math.min(H-80,en.y+Math.sin(ang)*200));
-        spawnParticle(en.x,en.y,'#1D9E75',10);
-      }
-    }
-  },
-  {
-    id:'bomber', name:'💣 THE BOMBER', desc:'Plants mines and lobs grenades',
-    color:'#BA7517', size:26, baseHp:450, spd:1.3, dmg:18, score:210,
-    special: function(en){
-      en.st=en.st||{cd:0,gcd:0};
-      en.st.cd++; en.st.gcd++;
-      // plant mine
-      if(en.st.cd>80){
-        en.st.cd=0;
-        mines.push({x:en.x,y:en.y,timer:180,radius:75,armTimer:45});
-        spawnParticle(en.x,en.y,'#BA7517',8);
-      }
-      // lob grenade toward player
-      if(en.st.gcd>140){
-        en.st.gcd=0;
-        const dx=player.x-en.x,dy=player.y-en.y,d=Math.hypot(dx,dy)||1;
-        projectiles.push({x:en.x,y:en.y,vx:(dx/d)*5,vy:(dy/d)*5,color:'#EF9F27',owner:'enemy',dmg:25,life:55,size:8,pierce:0,grenade:true});
-        spawnParticle(en.x,en.y,'#EF9F27',6);
-      }
-    }
-  },
-  {
-    id:'phantom', name:'👻 THE PHANTOM', desc:'Teleports and spawns clones',
-    color:'#D4537E', size:22, baseHp:320, spd:1.6, dmg:16, score:230,
-    special: function(en){
-      en.st=en.st||{cd:0};
-      en.st.cd++;
-      if(en.st.cd>140){
-        en.st.cd=0;
-        const ang=Math.random()*Math.PI*2,dist=100+Math.random()*90;
-        en.x=Math.max(30,Math.min(W-30,player.x+Math.cos(ang)*dist));
-        en.y=Math.max(60,Math.min(H-80,player.y+Math.sin(ang)*dist));
-        spawnParticle(en.x,en.y,'#D4537E',18);
-        for(let i=0;i<2;i++){
-          enemies.push({x:en.x+(Math.random()-0.5)*100,y:en.y+(Math.random()-0.5)*100,hp:40,maxHp:40,spd:1.4,color:'#ED93B1',size:14,dmg:8,sc:15,stun:0,atkTimer:0,isClone:true,cloneTimer:220,baseSpd:1.4,_spd:1.4,attackFn:null});
-        }
-        announce('👻 PHANTOM SPLITS!');
-      }
-      // dash attack
-      en.st.dash=(en.st.dash||0)+1;
-      if(en.st.dash>60){
-        en.st.dash=0;
-        const dx=player.x-en.x,dy=player.y-en.y,d=Math.hypot(dx,dy)||1;
-        en.x+=(dx/d)*80; en.y+=(dy/d)*80;
-        spawnParticle(en.x,en.y,'#D4537E',8);
-        if(Math.hypot(player.x-en.x,player.y-en.y)<40) takeDamage(12,en);
-      }
-    }
-  }
-];
-
-const ALL_UPGRADES = [
-  {id:'mgDmg',         cat:'weapon',icon:'🔫',name:'High Velocity Rounds', desc:'+5 MG damage per stack'},
-  {id:'mgCd',          cat:'weapon',icon:'⚡',name:'Overclocked',           desc:'Faster fire rate per stack'},
-  {id:'mgPierce',      cat:'weapon',icon:'💥',name:'Armour Piercing',       desc:'Bullets pierce 2 enemies',once:true},
-  {id:'mgSpray',       cat:'weapon',icon:'🌀',name:'Spread Shot',           desc:'Fire 3 bullets at once',once:true},
-  {id:'daggerDmg',     cat:'weapon',icon:'🗡️',name:'Sharpened Daggers',   desc:'+8 Dagger damage per stack'},
-  {id:'daggerRange',   cat:'weapon',icon:'🔄',name:'Longer Reach',          desc:'+20 Dagger range per stack'},
-  {id:'daggerTriple',  cat:'weapon',icon:'🔱',name:'Triple Strike',         desc:'Daggers hit 3x per attack',once:true},
-  {id:'shieldCapacity',cat:'shield',icon:'🛡️',name:'Reinforced Shield',   desc:'+30 max shield per stack'},
-  {id:'shieldRegenRate',cat:'shield',icon:'🔵',name:'Quick Recovery',      desc:'Shield regens 50% faster'},
-  {id:'shieldSpike',   cat:'shield',icon:'⚡',name:'Spike Shield',          desc:'Reflect 10 dmg on hit',once:true},
-  {id:'shieldBlock',   cat:'shield',icon:'🚫',name:'Full Block',            desc:'Shield bash knocks further',once:true},
-  {id:'playerSpd',     cat:'player',icon:'👟',name:'Fleet Feet',            desc:'+0.3 move speed per stack'},
-  {id:'playerHpMax',   cat:'player',icon:'💖',name:'Iron Will',             desc:'+30 max HP (also heals)'},
-  {id:'playerRegen',   cat:'player',icon:'🌿',name:'Regeneration',          desc:'+1 HP regen per 2 sec'},
-  {id:'goldMult',      cat:'player',icon:'🪙',name:'Gold Rush',             desc:'+25% gold from enemies'}
-];
-
-const SHOP_CATALOG = [
-  {id:'s_heal50',     icon:'❤️', name:'Heal 50 HP',         desc:'Restore 50 HP now',           cost:60, max:99,onBuy:()=>{hp=Math.min(hp+50,maxHp);}},
-  {id:'s_healFull',   icon:'💊', name:'Full Heal',           desc:'Restore all HP',              cost:150,max:1, onBuy:()=>{hp=maxHp;}},
-  {id:'s_maxHp',      icon:'💗', name:'+50 Max HP',          desc:'Permanently raise max HP',    cost:100,max:3, onBuy:()=>{maxHp+=50;hp=Math.min(hp+50,maxHp);}},
-  {id:'s_shieldUp',   icon:'🛡️',name:'+60 Max Shield',      desc:'Permanently raise max shield',cost:90, max:4, onBuy:()=>{maxShield+=60;shield=Math.min(shield+60,maxShield);}},
-  {id:'s_shieldFull', icon:'🔵', name:'Full Shield Restore', desc:'Fill shield to max now',      cost:70, max:99,onBuy:()=>{shield=maxShield;}},
-  {id:'s_ammo',       icon:'🔫', name:'Extended Mag',        desc:'+10 max ammo',                cost:80, max:5, onBuy:()=>{mgMaxAmmo+=10;mgAmmo=Math.min(mgAmmo+10,mgMaxAmmo);}},
-  {id:'s_spd',        icon:'💨', name:'+Speed',              desc:'+0.4 movement speed',         cost:80, max:3, onBuy:()=>{buffs.playerSpd+=0.4;}},
-  {id:'s_mgDmg',      icon:'💢', name:'Power Rounds',        desc:'+8 MG damage',                cost:90, max:5, onBuy:()=>{buffs.mgDmg+=1.6;}},
-  {id:'s_daggerEdge', icon:'🗡️',name:'Honed Blades',        desc:'+12 Dagger damage',           cost:90, max:5, onBuy:()=>{buffs.daggerDmg+=1.5;}},
-  {id:'s_regen',      icon:'🌿', name:'Regen Potion',        desc:'+2 HP regen per 2 sec',       cost:110,max:3, onBuy:()=>{buffs.playerRegen+=2;}},
-  {id:'s_goldBoost',  icon:'🪙', name:'Lucky Charm',         desc:'+50% gold from kills',        cost:120,max:2, onBuy:()=>{buffs.goldMult+=0.5;}}
-];
-let shopBought={};
-
-function selectMode(m){
-  gameMode=m;
-  document.getElementById('mb-levels').classList.toggle('sel',m==='levels');
-  document.getElementById('mb-endless').classList.toggle('sel',m==='endless');
-  document.getElementById('overlay-sub').textContent=m==='levels'?'Complete 3 waves to advance levels':'Survive as long as possible!';
-}
-function selectWeapon(i){
-  currentWeapon=i;
-  document.querySelectorAll('.wpn-slot').forEach((el,j)=>el.classList.toggle('active',j===i));
-  document.getElementById('shield-bar-wrap').style.display=i===2?'block':'none';
-  document.getElementById('ammo-bar-wrap').style.display=i===0?'block':'none';
-}
-function announce(msg){
-  const el=document.getElementById('wave-announce');
-  el.innerHTML=msg; el.style.opacity='1'; announceTimer=130;
-}
-
-function startGame(){
-  document.getElementById('overlay').style.display='none';
-  hp=maxHp=100; score=0; gold=0; wave=1; level=1; frameCount=0;
-  currentWeapon=0; cooldown=0; cooldownMax=1;
-  waveTimer=0; waveClearing=false; announceTimer=0; activeBoss=null;
-  initBuffs(); shopBought={};
-  shield=maxShield=80; shieldRegenTimer=0;
-  mgAmmo=mgMaxAmmo=MG_MAX_AMMO; mgReloading=false; mgReloadTimer=0;
-  player={x:W/2,y:H/2,size:13,regenTimer:0,shieldAngle:0};
-  enemies=[]; projectiles=[]; particles=[]; mines=[];
-  keys={}; mousePos={x:W/2,y:H/2}; mouseDown=false;
-  document.getElementById('shield-bar-wrap').style.display='none';
-  document.getElementById('ammo-bar-wrap').style.display='block';
-  document.getElementById('boss-bar-wrap').style.display='none';
-  selectWeapon(0);
-  spawnWave();
-  gameState='playing';
-  announce('Wave 1 — Fight!');
-  requestAnimationFrame(loop);
-}
-
-const MAX_LEVEL = 10;
-
-// Per-level config: enemies per wave, hp/spd/dmg multipliers, boss chance, enemy type weights [scout,brute,ranger]
-const LEVEL_CONFIG = [
-  // Lv1 — Tutorial: scouts only, very slow, tiny
-  {count:4,  hpM:0.6, spdM:0.7, dmgM:0.6, bossChance:0,    weights:[1.0, 0.0, 0.0], label:'🌱 Rookie',    color:'#4CAF50'},
-  // Lv2 — Easy: mostly scouts, first brutes appear
-  {count:6,  hpM:0.8, spdM:0.8, dmgM:0.75,bossChance:0,    weights:[0.8, 0.2, 0.0], label:'🟢 Easy',      color:'#66BB6A'},
-  // Lv3 — Rangers enter
-  {count:8,  hpM:1.0, spdM:0.9, dmgM:0.85,bossChance:0.10, weights:[0.6, 0.2, 0.2], label:'🔵 Normal',    color:'#42A5F5'},
-  // Lv4 — Getting serious
-  {count:10, hpM:1.1, spdM:1.0, dmgM:1.0, bossChance:0.20, weights:[0.5, 0.3, 0.2], label:'🔵 Normal+',   color:'#29B6F6'},
-  // Lv5 — Mid-point
-  {count:12, hpM:1.3, spdM:1.05,dmgM:1.1, bossChance:0.30, weights:[0.4, 0.3, 0.3], label:'🟡 Tricky',    color:'#FFA726'},
-  // Lv6 — Brutes become common
-  {count:13, hpM:1.5, spdM:1.1, dmgM:1.2, bossChance:0.40, weights:[0.3, 0.4, 0.3], label:'🟡 Tricky+',   color:'#FF9800'},
-  // Lv7 — Fast and aggressive
-  {count:14, hpM:1.75,spdM:1.15,dmgM:1.35,bossChance:0.50, weights:[0.25,0.4, 0.35],label:'🟠 Hard',      color:'#EF6C00'},
-  // Lv8 — Very dangerous
-  {count:16, hpM:2.0, spdM:1.2, dmgM:1.5, bossChance:0.60, weights:[0.2, 0.45,0.35],label:'🔴 Very Hard', color:'#E53935'},
-  // Lv9 — Elite enemies
-  {count:18, hpM:2.4, spdM:1.3, dmgM:1.7, bossChance:0.75, weights:[0.15,0.5, 0.35],label:'🔴 Brutal',    color:'#B71C1C'},
-  // Lv10 — Max: Nightmare mode, boss always spawns wave 3
-  {count:20, hpM:3.0, spdM:1.45,dmgM:2.0, bossChance:1.0,  weights:[0.1, 0.5, 0.4], label:'💀 NIGHTMARE', color:'#7F77DD'},
-];
-
-function getLvCfg(){ return LEVEL_CONFIG[Math.min(level-1, MAX_LEVEL-1)]; }
-function getPlayerSpeed(){ return 3.0+buffs.playerSpd; }
-
-function calcWaveCount(){
-  const cfg=getLvCfg();
-  // wave 1 slightly fewer, wave 3 slightly more
-  return cfg.count + (wave-1)*2;
-}
-
-function shouldSpawnBoss(){
-  const cfg=getLvCfg();
-  if(wave<2) return false;
-  // Lv10: boss guaranteed on wave 3
-  if(level>=MAX_LEVEL&&wave===3) return true;
-  return Math.random()<cfg.bossChance;
-}
-
-function pickEnemyType(){
-  const cfg=getLvCfg();
-  const r=Math.random(), w=cfg.weights;
-  if(r<w[0]) return 0;
-  if(r<w[0]+w[1]) return 1;
-  return 2;
-}
-
-function spawnWave(){
-  mines=[];
-  const cfg=getLvCfg();
-  const count=calcWaveCount(), spawnBoss=shouldSpawnBoss();
-  for(let i=0;i<count;i++){
-    setTimeout(()=>{
-      if(gameState!=='playing') return;
-      const side=Math.floor(Math.random()*4);
-      let ex,ey;
-      if(side===0){ex=Math.random()*W;ey=-24;}
-      else if(side===1){ex=W+24;ey=Math.random()*H;}
-      else if(side===2){ex=Math.random()*W;ey=H+24;}
-      else{ex=-24;ey=Math.random()*H;}
-      const type=pickEnemyType();
-      const t=BASE_ENEMIES[type];
-      // wave scaling within a level (each wave slightly tougher)
-      const waveBonus=1+(wave-1)*0.08;
-      const hp=t.hp*cfg.hpM*waveBonus;
-      const spd=t.spd*cfg.spdM*waveBonus;
-      const dmg=t.dmg*cfg.dmgM;
-      enemies.push({
-        x:ex,y:ey,hp,maxHp:hp,
-        spd,baseSpd:spd,_spd:spd,
-        color:t.color,size:t.size,dmg,sc:t.score*level,
-        stun:0,atkTimer:0,attackFn:t.attack
-      });
-    },i*280);
-  }
-  if(spawnBoss){
-    setTimeout(()=>{
-      if(gameState!=='playing') return;
-      const bt=BOSS_TYPES[Math.floor(Math.random()*BOSS_TYPES.length)];
-      const bossHpM=cfg.hpM*(1+(wave-1)*0.1);
-      const side=Math.floor(Math.random()*4);
-      let ex,ey;
-      if(side===0){ex=W/2;ey=-40;} else if(side===1){ex=W+40;ey=H/2;} else if(side===2){ex=W/2;ey=H+40;} else{ex=-40;ey=H/2;}
-      const boss={x:ex,y:ey,hp:bt.baseHp*bossHpM,maxHp:bt.baseHp*bossHpM,spd:bt.spd*cfg.spdM,baseSpd:bt.spd,_spd:bt.spd*cfg.spdM,color:bt.color,size:bt.size,dmg:bt.dmg*cfg.dmgM,sc:bt.score*level,stun:0,atkTimer:0,isBoss:true,bossId:bt.id,bossName:bt.name,special:bt.special,st:{},attackFn:null};
-      enemies.push(boss); activeBoss=boss;
-      document.getElementById('boss-bar-wrap').style.display='block';
-      document.getElementById('boss-bar-name').textContent=bt.name+' — '+bt.desc;
-      announce(bt.name+'<br><span style="font-size:16px;color:#fff">'+bt.desc+'</span>');
-    },count*280+500);
-  }
-}
-
-function spawnParticle(x,y,color,count=6){
-  for(let i=0;i<count;i++){const a=Math.random()*Math.PI*2,s=1+Math.random()*3.5;particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,color,life:28,maxLife:28,size:2+Math.random()*3});}
-}
-
-canvas.addEventListener('mousemove',e=>{const r=canvas.getBoundingClientRect();mousePos={x:e.clientX-r.left,y:e.clientY-r.top};if(gameState==='playing') player.shieldAngle=Math.atan2(mousePos.y-player.y,mousePos.x-player.x);});
-canvas.addEventListener('mousedown',e=>{if(gameState==='playing'){mouseDown=true;const r=canvas.getBoundingClientRect();mousePos={x:e.clientX-r.left,y:e.clientY-r.top};}});
-canvas.addEventListener('mouseup',()=>{mouseDown=false;});
-canvas.addEventListener('click',e=>{if(gameState==='playing'){const r=canvas.getBoundingClientRect();mousePos={x:e.clientX-r.left,y:e.clientY-r.top};}});
-document.addEventListener('keydown',e=>{
-  keys[e.key]=true;
-  if(gameState==='playing'){
-    if(e.key==='1') selectWeapon(0);
-    if(e.key==='2') selectWeapon(1);
-    if(e.key==='3') selectWeapon(2);
-    if(e.key==='r'||e.key==='R') startReload();
-    if(e.key===' '){e.preventDefault();}
-    if(e.key==='f'||e.key==='F') toggleFS();
-  }
-});
-document.addEventListener('keyup',e=>{keys[e.key]=false;});
-
-function startReload(){
-  if(mgReloading||currentWeapon!==0||mgAmmo===mgMaxAmmo) return;
-  mgReloading=true; mgReloadTimer=0;
-}
-
-function fireMG(){
-  if(mgReloading) return;
-  if(mgAmmo<=0){startReload();return;}
-  const w=getWeapon(0);
-  if(cooldown>0) return;
-  cooldownMax=w.cd; cooldown=w.cd;
-  mgAmmo--;
-  const dx=mousePos.x-player.x,dy=mousePos.y-player.y,dist=Math.hypot(dx,dy)||1;
-  const spread=buffs.mgSpray?3:1;
-  for(let s=0;s<spread;s++){
-    const spreadAngle=(s-(spread-1)/2)*0.18;
-    const ang=Math.atan2(dy,dx)+spreadAngle+(Math.random()-0.5)*0.06;
-    projectiles.push({x:player.x,y:player.y,vx:Math.cos(ang)*11,vy:Math.sin(ang)*11,color:w.color,owner:'player',dmg:w.dmg,life:55,size:3,pierce:buffs.mgPierce?2:0});
-  }
-  spawnParticle(player.x+(dx/dist)*14,player.y+(dy/dist)*14,'#FF6B35',2);
-}
-
-function activateDaggers(){
-  const w=getWeapon(1);
-  if(cooldown>0) return;
-  cooldownMax=w.cd; cooldown=w.cd;
-  const dx=mousePos.x-player.x,dy=mousePos.y-player.y,dist=Math.hypot(dx,dy)||1;
-  const hits=buffs.daggerTriple?3:1;
-  spawnParticle(player.x+(dx/dist)*60,player.y+(dy/dist)*60,'#C0C0C0',10);
-  for(let h=0;h<hits;h++) enemies.forEach(en=>{if(Math.hypot(en.x-player.x,en.y-player.y)<w.range){en.hp-=w.dmg/(hits===3?1.2:1);spawnParticle(en.x,en.y,'#fff',4);}});
-}
-
-function activateShield(){
-  const w=getWeapon(2);
-  if(cooldown>0) return;
-  cooldownMax=w.cd; cooldown=w.cd;
-  const knockDist=buffs.shieldBlock?160:110;
-  enemies.forEach(en=>{const dx=en.x-player.x,dy=en.y-player.y,dist=Math.hypot(dx,dy)||1;if(dist<w.range){en.hp-=w.dmg;en.x+=(dx/dist)*knockDist;en.y+=(dy/dist)*knockDist;en.stun=40;spawnParticle(en.x,en.y,'#85B7EB',8);}});
-  projectiles=projectiles.filter(p=>{if(p.owner==='enemy'){const d=Math.hypot(p.x-player.x,p.y-player.y);if(d<65){spawnParticle(p.x,p.y,'#85B7EB',6);return false;}}return true;});
-  shield=Math.min(shield+30,maxShield);
-  spawnParticle(player.x,player.y,'#85B7EB',14);
-}
-
-function takeDamage(dmg,source){
-  if(currentWeapon===2&&shield>0){
-    const absorbed=Math.min(shield,dmg);
-    shield=Math.max(0,shield-absorbed); dmg-=absorbed;
-    shieldRegenTimer=0;
-    if(buffs.shieldSpike&&source){source.hp-=10;spawnParticle(source.x,source.y,'#85B7EB',4);}
-    spawnParticle(player.x,player.y,'#378ADD',3);
-  }
-  if(dmg>0) hp=Math.max(0,hp-dmg);
-}
-
-function drawPlayer(){
-  const px=Math.round(player.x),py=Math.round(player.y);
-  if(currentWeapon===2&&shield>0){
-    const ang=player.shieldAngle,spread=Math.PI*0.55;
-    ctx.strokeStyle=`rgba(133,183,235,${0.3+0.4*(shield/maxShield)})`;
-    ctx.lineWidth=6; ctx.beginPath(); ctx.arc(px,py,22,ang-spread,ang+spread); ctx.stroke(); ctx.lineWidth=1;
-  }
-  ctx.fillStyle='#5DCAA5'; ctx.fillRect(px-7,py-10,14,14);
-  ctx.fillStyle='#9FE1CB'; ctx.fillRect(px-5,py-13,10,6);
-  ctx.fillStyle='#fff'; ctx.fillRect(px-4,py-12,3,4); ctx.fillRect(px+1,py-12,3,4);
-  if(currentWeapon===0){
-    // machine gun barrel
-    const ang=Math.atan2(mousePos.y-py,mousePos.x-px);
-    const bx=px+Math.cos(ang)*8,by=py+Math.sin(ang)*8;
-    ctx.fillStyle='#888'; ctx.fillRect(px-3,py-2,6,5);
-    ctx.fillStyle='#FF6B35'; ctx.fillRect(Math.round(bx-2),Math.round(by-2),14,4);
-    ctx.fillStyle='#555'; ctx.fillRect(Math.round(bx+8),Math.round(by-3),6,6);
-  } else if(currentWeapon===1){
-    ctx.fillStyle='#C0C0C0'; ctx.fillRect(px-10,py-3,6,11); ctx.fillRect(px+4,py-3,6,11);
-  } else {
-    const ang=player.shieldAngle,sx=Math.round(px+Math.cos(ang)*16),sy=Math.round(py+Math.sin(ang)*16);
-    ctx.fillStyle='#378ADD'; ctx.fillRect(sx-6,sy-8,12,16);
-    ctx.fillStyle='#85B7EB'; ctx.fillRect(sx-4,sy-6,8,12);
-    ctx.fillStyle='#B5D4F4'; ctx.fillRect(sx-2,sy-4,4,8);
-  }
-}
-
-function drawEnemy(en){
-  const px=Math.round(en.x),py=Math.round(en.y),s=en.size;
-  if(en.isBoss){
-    ctx.strokeStyle=en.color+'88'; ctx.lineWidth=4;
-    ctx.beginPath(); ctx.arc(px,py,s+6,0,Math.PI*2); ctx.stroke(); ctx.lineWidth=1;
-    ctx.fillStyle=en.stun>0?'#FFD700':en.color; ctx.fillRect(px-s,py-s,s*2,s*2);
-    ctx.fillStyle='#FFD700';
-    ctx.fillRect(px-s,py-s-10,s*2,6);
-    ctx.fillRect(px-s,py-s-14,4,8); ctx.fillRect(px-2,py-s-16,4,10); ctx.fillRect(px+s-4,py-s-14,4,8);
-  } else if(en.isClone){
-    ctx.globalAlpha=0.6; ctx.fillStyle=en.stun>0?'#FFD700':en.color; ctx.fillRect(px-s,py-s,s*2,s*2); ctx.globalAlpha=1;
-  } else {
-    ctx.fillStyle=en.stun>0?'#FFD700':en.color; ctx.fillRect(px-s,py-s,s*2,s*2);
-  }
-  ctx.fillStyle='rgba(0,0,0,0.55)'; ctx.fillRect(px-s,py-s-9,s*2,5);
-  ctx.fillStyle=en.isBoss?'#AFA9EC':'#E24B4A';
-  ctx.fillRect(px-s,py-s-9,Math.round(s*2*(en.hp/en.maxHp)),5);
-  ctx.fillStyle='rgba(255,255,255,0.7)'; ctx.fillRect(px-2,py-3,4,4);
-}
-
-function drawMine(m){
-  const px=Math.round(m.x),py=Math.round(m.y),armed=m.armTimer<=0;
-  ctx.fillStyle=armed?'#EF9F27':'#888'; ctx.fillRect(px-8,py-8,16,16);
-  ctx.fillStyle=armed?'#FFD700':'#555'; ctx.fillRect(px-4,py-4,8,8);
-  if(armed){
-    const pulse=(Math.sin(frameCount*0.15)+1)*0.5;
-    ctx.strokeStyle=`rgba(239,159,39,${0.3+pulse*0.5})`; ctx.lineWidth=2;
-    ctx.beginPath(); ctx.arc(px,py,m.radius*(0.3+pulse*0.1),0,Math.PI*2); ctx.stroke(); ctx.lineWidth=1;
-  }
-}
-
-function loop(){
-  if(gameState!=='playing') return;
-  update(); draw();
-  requestAnimationFrame(loop);
-}
-
-function update(){
-  frameCount++;
-  if(cooldown>0) cooldown--;
-
-  // MG hold-to-fire
-  if(currentWeapon===0&&(mouseDown||keys[' '])&&gameState==='playing') fireMG();
-
-  // daggers / shield on click (not hold)
-  // (handled via canvas click for daggers/shield)
-
-  // MG reload
-  if(mgReloading){
-    mgReloadTimer++;
-    if(mgReloadTimer>=MG_RELOAD_FRAMES){ mgReloading=false; mgReloadTimer=0; mgAmmo=mgMaxAmmo; }
-  }
-
-  const ammoFrac=mgReloading?(mgReloadTimer/MG_RELOAD_FRAMES):(mgAmmo/mgMaxAmmo);
-  document.getElementById('ammo-bar-fill').style.width=Math.round(ammoFrac*100)+'%';
-  document.getElementById('ammo-bar-fill').style.background=mgReloading?'#888':'#FF6B35';
-  document.getElementById('ammo-bar-label').textContent=mgReloading?'RELOADING...':'AMMO '+mgAmmo+'/'+mgMaxAmmo;
-
-  document.getElementById('cooldown-fill').style.width=cooldown>0?Math.round((1-cooldown/cooldownMax)*100)+'%':'100%';
-  if(announceTimer>0){announceTimer--;if(announceTimer===0)document.getElementById('wave-announce').style.opacity='0';}
-
-  if(buffs.playerRegen>0){player.regenTimer=(player.regenTimer||0)+1;if(player.regenTimer>=120){player.regenTimer=0;hp=Math.min(hp+buffs.playerRegen,maxHp);}}
-
-  shieldRegenTimer++;
-  const regenInt=Math.max(20,90-buffs.shieldRegenRate*25);
-  if(shieldRegenTimer>=regenInt&&shield<maxShield){shieldRegenTimer=0;shield=Math.min(shield+1,maxShield);}
-  document.getElementById('shield-bar-fill').style.width=Math.round((shield/maxShield)*100)+'%';
-
-  let dx=0,dy=0;
-  if(keys['ArrowLeft']||keys['a']||keys['A']) dx-=1;
-  if(keys['ArrowRight']||keys['d']||keys['D']) dx+=1;
-  if(keys['ArrowUp']||keys['w']||keys['W']) dy-=1;
-  if(keys['ArrowDown']||keys['s']||keys['S']) dy+=1;
-  if(dx&&dy){dx*=0.707;dy*=0.707;}
-  const spd=getPlayerSpeed();
-  player.x=Math.max(16,Math.min(W-16,player.x+dx*spd));
-  player.y=Math.max(50,Math.min(H-90,player.y+dy*spd));
-  player.shieldAngle=Math.atan2(mousePos.y-player.y,mousePos.x-player.x);
-
-  // enemies move and attack
-  enemies.forEach(en=>{
-    if(en.cloneTimer!==undefined){en.cloneTimer--;if(en.cloneTimer<=0){en.hp=0;return;}}
-    if(en.stun>0){en.stun--;return;}
-    const edx=player.x-en.x,edy=player.y-en.y,dist=Math.hypot(edx,edy)||1;
-    const spd2=en._spd||en.spd;
-    if(!en.st||!en.st.charging){en.x+=edx/dist*spd2;en.y+=edy/dist*spd2;}
-    // contact damage
-    if(dist<en.size+player.size&&frameCount%38===0) takeDamage(en.dmg,en);
-    // attack pattern
-    if(en.attackFn) en.attackFn(en);
-    if(en.isBoss&&en.special) en.special(en);
-  });
-
-  // homing projectiles
-  projectiles.forEach(p=>{
-    if(p.homing){
-      const dx2=player.x-p.x,dy2=player.y-p.y,d=Math.hypot(dx2,dy2)||1;
-      p.vx+=(dx2/d)*0.2; p.vy+=(dy2/d)*0.2;
-      const ps=Math.hypot(p.vx,p.vy);
-      if(ps>5){p.vx=(p.vx/ps)*5;p.vy=(p.vy/ps)*5;}
-    }
-  });
-
-  projectiles=projectiles.filter(p=>{
-    p.x+=p.vx; p.y+=p.vy; p.life--;
-    if(p.owner==='player'){
-      for(let i=enemies.length-1;i>=0;i--){
-        if(Math.hypot(enemies[i].x-p.x,enemies[i].y-p.y)<enemies[i].size+p.size){
-          enemies[i].hp-=p.dmg; spawnParticle(p.x,p.y,'#FF6B35',3);
-          if(p.pierce>0){p.pierce--;}else{return false;}
-        }
-      }
-    } else {
-      // grenade explodes on contact with player
-      if(p.grenade&&Math.hypot(player.x-p.x,player.y-p.y)<player.size+p.size+10){
-        takeDamage(p.dmg,null); spawnParticle(p.x,p.y,'#EF9F27',20); return false;
-      }
-      if(!p.grenade&&Math.hypot(player.x-p.x,player.y-p.y)<player.size+p.size){takeDamage(p.dmg,null);spawnParticle(p.x,p.y,'#E24B4A',5);return false;}
-    }
-    return p.life>0&&p.x>-40&&p.x<W+40&&p.y>-40&&p.y<H+40;
-  });
-
-  mines=mines.filter(m=>{
-    m.timer--; if(m.armTimer>0) m.armTimer--;
-    if(m.armTimer<=0&&Math.hypot(player.x-m.x,player.y-m.y)<m.radius){
-      takeDamage(40,null); spawnParticle(m.x,m.y,'#EF9F27',30); spawnParticle(m.x,m.y,'#BA7517',20);
-      enemies.forEach(en=>{if(Math.hypot(en.x-m.x,en.y-m.y)<m.radius*0.6)en.hp-=20;}); return false;
-    }
-    return m.timer>0;
-  });
-
-  enemies=enemies.filter(en=>{
-    if(en.hp<=0){
-      const g=Math.round((en.isBoss?80:en.isClone?5:5+Math.floor(Math.random()*8))*buffs.goldMult);
-      score+=en.sc; gold+=g; spawnParticle(en.x,en.y,en.color,12);
-      if(en.isBoss){spawnParticle(en.x,en.y,'#FFD700',30);activeBoss=null;document.getElementById('boss-bar-wrap').style.display='none';}
-      return false;
-    }
-    if(en.isBoss&&activeBoss===en) document.getElementById('boss-bar-fill').style.width=Math.round((en.hp/en.maxHp)*100)+'%';
-    return true;
-  });
-
-  particles=particles.filter(p=>{p.x+=p.vx;p.y+=p.vy;p.vx*=0.88;p.vy*=0.88;p.life--;return p.life>0;});
-
-  if(enemies.length===0&&!waveClearing){waveClearing=true;waveTimer=frameCount;announce(gameMode==='levels'&&wave>=3?'✨ Level Clear!':'✓ Wave Cleared!');}
-  if(waveClearing&&frameCount-waveTimer>90){waveClearing=false;openUpgradeScreen();}
-
-  document.getElementById('hp-display').textContent='❤️ '+hp+'/'+maxHp;
-  if(gameMode==='levels'){
-    const cfg=getLvCfg();
-    document.getElementById('wave-display').textContent=cfg.label+' | Lv'+level+'/'+MAX_LEVEL+' W'+wave+'/3';
-    document.getElementById('wave-display').style.color=cfg.color;
-  } else {
-    document.getElementById('wave-display').textContent='Wave '+wave;
-    document.getElementById('wave-display').style.color='#fff';
-  }
-  document.getElementById('score-display').textContent='Score: '+score;
-  document.getElementById('gold-display').textContent='🪙 '+gold;
-  document.getElementById('ammo-display').textContent=['🔫 MG','🗡️ Daggers','🛡️ Shield'][currentWeapon];
-  if(hp<=0){gameState='over';showGameOver();}
-}
-
-// click for non-MG weapons
-canvas.addEventListener('click',e=>{
-  if(gameState!=='playing') return;
-  const r=canvas.getBoundingClientRect(); mousePos={x:e.clientX-r.left,y:e.clientY-r.top};
-  if(currentWeapon===1) activateDaggers();
-  if(currentWeapon===2) activateShield();
-});
-
-function openUpgradeScreen(){
-  gameState='upgrade';
-  const pool=ALL_UPGRADES.filter(u=>!(u.once&&buffs[u.id]));
-  const picks=shuffle(pool).slice(0,3);
-  const container=document.getElementById('upgrade-cards');
-  container.innerHTML='';
-  picks.forEach(u=>{
-    const card=document.createElement('div');
-    card.className='upgrade-card '+(u.cat==='shield'?'shield':u.cat==='weapon'?'weapon':'player');
-    card.innerHTML=`<div class="uc-icon">${u.icon}</div><div class="uc-name">${u.name}</div><div class="uc-desc">${u.desc}</div>`;
-    card.onclick=()=>applyUpgrade(u.id);
-    container.appendChild(card);
-  });
-  document.getElementById('upgrade-screen').style.display='flex';
-}
-
-function applyUpgrade(id){
-  const u=ALL_UPGRADES.find(x=>x.id===id);
-  if(!u) return;
-  if(u.once){buffs[id]=true;}else{buffs[id]=(buffs[id]||0)+1;}
-  if(id==='playerHpMax'){maxHp+=30;hp=Math.min(hp+30,maxHp);}
-  if(id==='playerSpd') buffs.playerSpd+=0.3;
-  if(id==='playerRegen') buffs.playerRegen+=1;
-  if(id==='goldMult') buffs.goldMult+=0.25;
-  if(id==='shieldCapacity'){maxShield+=30;shield=Math.min(shield+30,maxShield);}
-  if(id==='shieldRegenRate') buffs.shieldRegenRate+=1;
-  closeUpgradeScreen();
-}
-
-function skipUpgrade(){closeUpgradeScreen();}
-function closeUpgradeScreen(){document.getElementById('upgrade-screen').style.display='none';nextWave();}
-function openShop(){document.getElementById('upgrade-screen').style.display='none';gameState='shop';renderShop();document.getElementById('shop-screen').style.display='flex';}
-
-function renderShop(){
-  document.getElementById('shop-gold').textContent='🪙 '+gold+' gold';
-  const container=document.getElementById('shop-items');
-  container.innerHTML='';
-  SHOP_CATALOG.forEach(item=>{
-    const bought=shopBought[item.id]||0,soldOut=bought>=item.max;
-    const div=document.createElement('div');
-    div.className='shop-item'+(soldOut?' sold-out':'');
-    div.innerHTML=`<div class="si-icon">${item.icon}</div><div class="si-name">${item.name}</div><div class="si-desc">${item.desc}</div><div class="si-cost">🪙 ${item.cost}</div><button ${soldOut||gold<item.cost?'disabled':''} onclick="buyItem('${item.id}')">${soldOut?'Sold Out':'Buy'}</button>`;
-    container.appendChild(div);
-  });
-}
-
-function buyItem(id){
-  const item=SHOP_CATALOG.find(x=>x.id===id);
-  if(!item||gold<item.cost) return;
-  gold-=item.cost; shopBought[id]=(shopBought[id]||0)+1; item.onBuy(); renderShop();
-}
-
-function closeShop(){document.getElementById('shop-screen').style.display='none';nextWave();}
-
-function nextWave(){
-  wave++;
-  if(gameMode==='levels'&&wave>3){
-    wave=1;
-    if(level>=MAX_LEVEL){ showVictory(); return; }
-    level++;
-    const cfg=getLvCfg();
-    announce('🏆 LEVEL '+level+'!<br><span style="font-size:18px;color:'+cfg.color+'">'+cfg.label+'</span>');
-  }
-  spawnWave();
-  if(wave>1) announce('Wave '+wave+(gameMode==='levels'?' — Lv'+level:'')+' — Fight!');
-  gameState='playing'; requestAnimationFrame(loop);
-}
-
-function showVictory(){
-  gameState='over';
-  const ov=document.getElementById('overlay'); ov.style.display='flex';
-  ov.innerHTML=`<h2 style="font-size:36px;">🏆 YOU WIN!</h2><p style="font-size:16px;color:#FFD700;margin:10px 0;">You conquered all 10 levels!</p><p style="color:#aaa;">Final Score: <strong style="color:#FFD700">${score}</strong></p><p style="color:#aaa;">Gold earned: 🪙 ${gold}</p><p style="color:#555;font-size:12px;margin-top:8px;">You are a true Rival. 👑</p><button class="big-btn" onclick="startGame()">▶ PLAY AGAIN</button><button class="ghost-btn" onclick="backToMenu()">↩ Menu</button>`;
-}
-
-function showGameOver(){
-  const ov=document.getElementById('overlay'); ov.style.display='flex';
-  const cfg=getLvCfg();
-  ov.innerHTML=`<h2>💀 GAME OVER</h2><p style="font-size:20px;margin:10px 0;color:#FFD700;">Score: ${score}</p><p style="color:#aaa;">Wave ${wave} — ${gameMode==='levels'?cfg.label+' (Level '+level+'/'+MAX_LEVEL+')':'Endless Mode'}</p><p style="color:#555;font-size:12px;margin-top:6px;">Gold earned: 🪙 ${gold}</p><button class="big-btn" onclick="startGame()">▶ PLAY AGAIN</button><button class="ghost-btn" onclick="backToMenu()">↩ Menu</button>`;
-}
-
-function backToMenu(){
-  gameState='menu'; const ov=document.getElementById('overlay'); ov.style.display='flex';
-  ov.innerHTML=`<h2>⚔️ RIVALS RUSH</h2><p>Machine Gun, Daggers, or Shield — pick your style!</p><div id="mode-select"><button class="mode-btn ${gameMode==='levels'?'sel':''}" id="mb-levels" onclick="selectMode('levels')">📜 Levels</button><button class="mode-btn ${gameMode==='endless'?'sel':''}" id="mb-endless" onclick="selectMode('endless')">♾️ Endless</button></div><p id="overlay-sub" style="color:#aaa;font-size:13px;">${gameMode==='levels'?'Complete 3 waves to advance levels':'Survive as long as possible!'}</p><p style="color:#555;font-size:12px;margin-top:8px;">WASD/Arrows=Move &nbsp;|&nbsp; Hold Click/Space=Shoot &nbsp;|&nbsp; 1/2/3=Weapon</p><button class="big-btn" onclick="startGame()">▶ START GAME</button><p style="color:#444;font-size:11px;margin-top:12px;">F or ⛶ for fullscreen</p>`;
-}
-
-function draw(){
-  ctx.fillStyle='#1a1a2e'; ctx.fillRect(0,0,W,H);
-  ctx.strokeStyle='rgba(255,255,255,0.03)'; ctx.lineWidth=1;
-  for(let x=0;x<W;x+=80){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
-  for(let y=0;y<H;y+=80){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
-  mines.forEach(drawMine);
-  particles.forEach(p=>{ctx.globalAlpha=p.life/p.maxLife;ctx.fillStyle=p.color;ctx.fillRect(Math.round(p.x-p.size/2),Math.round(p.y-p.size/2),Math.round(p.size),Math.round(p.size));});
-  ctx.globalAlpha=1;
-  projectiles.forEach(p=>{
-    ctx.fillStyle=p.color;
-    if(p.grenade){ctx.beginPath();ctx.arc(Math.round(p.x),Math.round(p.y),p.size,0,Math.PI*2);ctx.fill();}
-    else{ctx.fillRect(Math.round(p.x-p.size/2),Math.round(p.y-p.size/2),p.size*2,p.size);}
-  });
-  enemies.forEach(drawEnemy);
-  drawPlayer();
-}
-
-function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
-</script>
 </body>
 </html>
