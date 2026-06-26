@@ -5,27 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Play — Rivals Rush ⚔️</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap');
-
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { width: 100%; height: 100%; background: #1a1a2e; overflow: hidden; font-family: monospace; }
-
-  /* NAV */
-  #site-nav { position:fixed; top:0; left:0; width:100%; background:rgba(13,13,26,0.95); border-bottom:1px solid rgba(255,215,0,0.15); z-index:200; display:flex; align-items:center; justify-content:space-between; padding:10px 24px; height:46px; }
-  .sn-logo { font-family:'Press Start 2P',monospace; font-size:11px; color:#FFD700; text-decoration:none; }
-  .sn-links { display:flex; gap:20px; align-items:center; }
-  .sn-links a { color:#aaa; text-decoration:none; font-size:13px; font-weight:600; font-family:'Inter',sans-serif; transition:color 0.2s; }
-  .sn-links a:hover { color:#FFD700; }
-  .sn-lb { background:rgba(255,215,0,0.12); border:1px solid #FFD700; color:#FFD700 !important; padding:5px 14px; border-radius:5px; }
-  .sn-lb:hover { background:rgba(255,215,0,0.25) !important; }
-  #submit-name { width:100%; padding:10px 14px; background:rgba(255,255,255,0.06); border:1px solid #444; border-radius:6px; color:#fff; font-size:14px; font-family:monospace; text-align:center; outline:none; }
-  #submit-name:focus { border-color:#FFD700; }
-  #submit-name::placeholder { color:#555; }
-  #submit-btn { width:100%; padding:10px; background:#FFD700; border:none; border-radius:6px; font-size:13px; font-weight:700; cursor:pointer; color:#000; font-family:monospace; }
-  #submit-btn:hover { background:#FFC200; }
-  #submit-btn:disabled { background:#444; color:#666; cursor:default; }
-  #submit-msg { font-size:12px; color:#5DCAA5; }
-
   #game-container { position: relative; width: 100vw; height: calc(100vh - 46px); margin-top:46px; background: #1a1a2e; overflow: hidden; }
   canvas { display: block; image-rendering: pixelated; position: absolute; top: 0; left: 0; }
   #ui { position: absolute; top: 0; left: 0; width: 100%; padding: 10px 16px; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.55); z-index: 10; }
@@ -89,24 +70,24 @@
   .shop-item button:hover { background: #FFC200; }
   .shop-item button:disabled { background: #444; color: #666; cursor: default; }
   .shop-item.sold-out { opacity: 0.4; }
+
+  /* NAV */
+  #site-nav { position:fixed; top:0; left:0; width:100%; background:rgba(13,13,26,0.95); border-bottom:1px solid rgba(255,215,0,0.15); z-index:200; display:flex; align-items:center; justify-content:space-between; padding:10px 24px; height:46px; }
+  .sn-logo { font-family:monospace; font-size:12px; color:#FFD700; text-decoration:none; font-weight:bold; }
+  .sn-links { display:flex; gap:20px; align-items:center; }
+  .sn-links a { color:#aaa; text-decoration:none; font-size:13px; font-weight:600; transition:color 0.2s; }
+  .sn-links a:hover { color:#FFD700; }
 </style>
 </head>
 <body>
 
-<!-- SITE NAV -->
 <nav id="site-nav">
   <a class="sn-logo" href="index.html">⚔️ RIVALS RUSH</a>
   <div class="sn-links">
+    <a href="index.html">Home</a>
     <a href="how-to-play.html">How to Play</a>
-    <a class="sn-lb" style="display:none" href="javascript:void(0)" style="display:none">🏆 Leaderboard</a>
   </div>
 </nav>
-
-    <div class="lb-tab" onclick="switchTab('endless')">Endless</div>
-  </div>
-  <div id="lb-list"><div id="lb-loading">Loading...</div></div>
-  <button id="lb-refresh" onclick="loadLeaderboard()">↻ Refresh</button>
-</div>
 
 <div id="game-container">
   <canvas id="gc"></canvas>
@@ -851,13 +832,13 @@ function nextWave(){
 function showVictory(){
   gameState='over';
   const ov=document.getElementById('overlay'); ov.style.display='flex';
-  ov.innerHTML=`<h2 style="font-size:30px;">🏆 YOU WIN!</h2><p style="font-size:16px;color:#FFD700;margin:10px 0;">You conquered all 10 levels!</p><p style="color:#aaa;">Final Score: <strong style="color:#FFD700">${score}</strong></p><p style="color:#aaa;">Gold earned: 🪙 ${gold}</p><p style="color:#555;font-size:12px;margin-top:8px;">You are a true Rival. 👑</p><div style="display:flex;gap:10px;margin-top:12px;"><button class="big-btn" onclick="startGame()">▶ PLAY AGAIN</button><button class="ghost-btn" onclick="backToMenu()">↩ Menu</button></div>`;
+  ov.innerHTML=`<h2 style="font-size:36px;">🏆 YOU WIN!</h2><p style="font-size:16px;color:#FFD700;margin:10px 0;">You conquered all 10 levels!</p><p style="color:#aaa;">Final Score: <strong style="color:#FFD700">${score}</strong></p><p style="color:#aaa;">Gold earned: 🪙 ${gold}</p><p style="color:#555;font-size:12px;margin-top:8px;">You are a true Rival. 👑</p><button class="big-btn" onclick="startGame()">▶ PLAY AGAIN</button><button class="ghost-btn" onclick="backToMenu()">↩ Menu</button>`;
 }
 
 function showGameOver(){
   const ov=document.getElementById('overlay'); ov.style.display='flex';
   const cfg=getLvCfg();
-  ov.innerHTML=`<h2>💀 GAME OVER</h2><p style="font-size:20px;margin:10px 0;color:#FFD700;">Score: ${score}</p><p style="color:#aaa;">Wave ${wave} — ${gameMode==='levels'?cfg.label+' (Level '+level+'/'+MAX_LEVEL+')':'Endless Mode'}</p><p style="color:#555;font-size:12px;margin-top:6px;">Gold earned: 🪙 ${gold}</p><div style="display:flex;gap:10px;margin-top:12px;"><button class="big-btn" onclick="startGame()">▶ PLAY AGAIN</button><button class="ghost-btn" onclick="backToMenu()">↩ Menu</button></div>`;
+  ov.innerHTML=`<h2>💀 GAME OVER</h2><p style="font-size:20px;margin:10px 0;color:#FFD700;">Score: ${score}</p><p style="color:#aaa;">Wave ${wave} — ${gameMode==='levels'?cfg.label+' (Level '+level+'/'+MAX_LEVEL+')':'Endless Mode'}</p><p style="color:#555;font-size:12px;margin-top:6px;">Gold earned: 🪙 ${gold}</p><button class="big-btn" onclick="startGame()">▶ PLAY AGAIN</button><button class="ghost-btn" onclick="backToMenu()">↩ Menu</button>`;
 }
 
 function backToMenu(){
